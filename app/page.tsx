@@ -8,7 +8,6 @@ import {
   CheckCircleIcon,
   BookOpenIcon,
   StarIcon,
-  ArrowDownIcon,
 } from "@heroicons/react/24/solid";
 import {
   TrophyIcon,
@@ -41,12 +40,6 @@ function getCheckoutUrl() {
 }
 
 // ─── DADOS ───────────────────────────────────────────────────────────────────
-const stats = [
-  { value: "870+", label: "Figurinhas por álbum" },
-  { value: "R$700", label: "Custo médio completo" },
-  { value: "0%", label: "Necessário com nossa estratégia" },
-];
-
 const painPoints = [
   "Gastar fortunas em pacotinhos repetidos",
   "Pagar preços absurdos no mercado avulso",
@@ -78,11 +71,6 @@ type FloatingBadgeProps = {
   className?: string;
 };
 
-type StatCardProps = {
-  value: string;
-  label: string;
-};
-
 type SectionHeaderProps = {
   badge: ReactNode;
   title: ReactNode;
@@ -97,17 +85,6 @@ function FloatingBadge({ children, className = "" }: FloatingBadgeProps) {
     >
       {children}
     </span>
-  );
-}
-
-function StatCard({ value, label }: StatCardProps) {
-  return (
-    <div className="flex min-w-[160px] flex-col items-center gap-1 rounded-3xl border border-zinc-200 bg-white px-6 py-5 shadow-sm">
-      <span className="text-3xl font-black text-[#16a34a]">{value}</span>
-      <span className="text-center text-xs font-semibold leading-tight text-zinc-500">
-        {label}
-      </span>
-    </div>
   );
 }
 
@@ -172,6 +149,9 @@ function HeroSection() {
             <TrophyIcon className="h-3.5 w-3.5" />
             Copa  · Álbum Completo
           </FloatingBadge>
+          <p className="mt-4 text-sm font-black uppercase tracking-[0.2em] text-zinc-500 sm:text-base">
+            Ideal pra quem so quer completar o album
+          </p>
         </div>
 
         {/* HEADLINE PRINCIPAL */}
@@ -527,6 +507,166 @@ function CocaColaStickersSection() {
   );
 }
 
+function TestimonialsSection() {
+  const testimonials = [
+    {
+      name: "Rafael Silva",
+      text: "Recebi o material no email e consegui imprimir certinho. Bem mais prático do que ficar comprando pacotinho.",
+    },
+    {
+      name: "Jessica Oliveira",
+      text: "Gostei porque veio tudo organizado. O guia de impressão também ajudou bastante.",
+    },
+    {
+      name: "Carlos Mendes",
+      text: "Consegui completar sem gastar muito. Valeu a pena pelo preço.",
+    },
+  ];
+
+  return (
+    <section className="relative bg-[#f8f8f8] px-4 py-24 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        <SectionHeader
+          variant="green"
+          badge={
+            <>
+              <StarIcon className="h-3.5 w-3.5" />
+              Depoimentos
+            </>
+          }
+          title="Quem comprou, recebeu e conseguiu imprimir"
+          description="Veja o que alguns clientes dizem sobre o material."
+        />
+
+        <div className="grid gap-6 sm:grid-cols-3">
+          {testimonials.map((item) => (
+            <div
+              key={item.name}
+              className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm"
+            >
+              <div className="mb-4 flex gap-1 text-[#ca8a04]">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <StarIcon key={star} className="h-5 w-5" />
+                ))}
+              </div>
+
+              <p className="text-sm font-semibold leading-relaxed text-zinc-700">
+                &ldquo;{item.text}&rdquo;
+              </p>
+
+              <p className="mt-5 text-sm font-black text-zinc-950">
+                {item.name}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function GuaranteeSection() {
+  return (
+    <section className="relative bg-white px-4 py-16 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl rounded-[2rem] border border-[#16a34a]/20 bg-[#f8fff9] p-6 text-center shadow-sm sm:p-8">
+        <FloatingBadge className="mb-5 border border-[#16a34a]/20 bg-white text-[#15803d]">
+          Garantia de 7 dias
+        </FloatingBadge>
+
+        <h2 className="text-3xl font-black leading-tight text-zinc-950 sm:text-4xl">
+          Compre sem medo: você tem 7 dias de garantia
+        </h2>
+
+        <p className="mx-auto mt-4 max-w-2xl text-base font-semibold leading-relaxed text-zinc-600 sm:text-lg">
+          Se você tiver qualquer problema com o acesso ou entender que o
+          material não é para você, basta solicitar suporte dentro do prazo de 7
+          dias.
+        </p>
+
+        <div className="mt-6 flex justify-center">
+          <div className="inline-flex items-center gap-2 rounded-2xl bg-[#16a34a]/10 px-5 py-3 text-sm font-black text-[#15803d]">
+            <CheckCircleIcon className="h-5 w-5" />
+            Compra protegida e acesso enviado por email
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FAQSection() {
+  const faqs = [
+    {
+      question: "Como eu recebo o material?",
+      answer:
+        "Após finalizar a compra, o acesso ao material é enviado automaticamente para o email informado no checkout.",
+    },
+    {
+      question: "O que vem incluso?",
+      answer:
+        "Você recebe as figurinhas da Copa, páginas do álbum para imprimir, figurinhas da Coca-Cola, bônus especiais e manual de impressão.",
+    },
+    {
+      question: "Posso imprimir em casa?",
+      answer:
+        "Sim. O material foi preparado para impressão. Você também recebe um guia com orientações para imprimir no tamanho correto.",
+    },
+    {
+      question: "Serve para vender também?",
+      answer:
+        "Você pode imprimir para uso próprio, presente ou revenda, conforme a forma que desejar utilizar o material.",
+    },
+    {
+      question: "E se eu tiver problema para acessar?",
+      answer:
+        "Você pode entrar em contato pelo suporte usando os dados informados na página de compra ou no email recebido.",
+    },
+    {
+      question: "Tem garantia?",
+      answer: "Sim. Você tem 7 dias de garantia após a compra.",
+    },
+  ];
+
+  return (
+    <section className="relative bg-white px-4 py-24 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl">
+        <SectionHeader
+          variant="green"
+          badge="Perguntas frequentes"
+          title="Ainda ficou com alguma dúvida?"
+          description="Veja as principais respostas antes de finalizar sua compra."
+        />
+
+        <div className="grid gap-4">
+          {faqs.map((faq) => (
+            <div
+              key={faq.question}
+              className="rounded-3xl border border-zinc-200 bg-[#f8f8f8] p-6"
+            >
+              <h3 className="text-base font-black text-zinc-950">
+                {faq.question}
+              </h3>
+              <p className="mt-2 text-sm font-semibold leading-relaxed text-zinc-600">
+                {faq.answer}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-8 flex justify-center">
+          <a
+            href="#oferta"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#16a34a] px-8 py-4 text-base font-black uppercase tracking-wide text-white shadow-[0_18px_45px_rgba(22,163,74,0.25)] transition-all duration-300 hover:-translate-y-1 hover:bg-[#15803d]"
+          >
+            <BookOpenIcon className="h-5 w-5" />
+            Quero receber no meu email
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function OfferSection() {
   const weekday = new Intl.DateTimeFormat("pt-BR", { weekday: "long" }).format(
     new Date()
@@ -602,6 +742,11 @@ function OfferSection() {
           <BookOpenIcon className="h-5 w-5" />
           Receber agora
         </a>
+
+        <p className="mt-3 text-xs font-semibold text-zinc-500">
+          Acesso enviado automaticamente para seu email após a confirmação do
+          pagamento.
+        </p>
       </div>
     </section>
   );
@@ -645,7 +790,10 @@ export default function LandingPage() {
       <PrintManualSection />
       <PreviewSection />
       <CocaColaStickersSection />
+      <TestimonialsSection />
       <OfferSection />
+      <GuaranteeSection />
+      <FAQSection />
     </main>
   );
 }
