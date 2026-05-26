@@ -290,7 +290,7 @@ async function processarPedidoFamilia(pedido: PedidoFigurinha) {
       .from("usuarios")
       .update({
         senha_hash: senhaHash,
-        senha_temporaria: true,
+        primeiro_acesso: true,
         creditos: creditosAtuais + 5,
         updated_at: new Date().toISOString(),
       })
@@ -306,7 +306,7 @@ async function processarPedidoFamilia(pedido: PedidoFigurinha) {
         email: pedido.email,
         nome: pedido.nome,
         senha_hash: senhaHash,
-        senha_temporaria: true,
+        primeiro_acesso: true,
         creditos: 5,
       })
       .select("id")
@@ -405,7 +405,7 @@ async function processarFamiliaSemPedido(params: {
       .update({
         nome,
         senha_hash: senhaHash,
-        senha_temporaria: true,
+        primeiro_acesso: true,
         creditos: creditosAtuais + 5,
         updated_at: new Date().toISOString(),
       })
@@ -421,7 +421,7 @@ async function processarFamiliaSemPedido(params: {
         email,
         nome,
         senha_hash: senhaHash,
-        senha_temporaria: true,
+        primeiro_acesso: true,
         creditos: 5,
       })
       .select("id")

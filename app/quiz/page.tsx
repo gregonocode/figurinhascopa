@@ -211,12 +211,12 @@ export default function QuizPage() {
               </p>
 
               <h1 className="text-3xl font-black tracking-tight">
-                Escolha como quer criar sua figurinha personalizada
+                Escolha como quer criar sua figurinha
               </h1>
 
               <p className="mt-3 text-sm leading-6 text-neutral-600">
                 Voce pode criar uma figurinha individual e receber direto no
-                e-mail, ou escolher o pacote familia. Qual vc escolher ?
+                e-mail, ou escolher o pacote familia. Clique uma opção abaixo 👇
               </p>
 
               <div className="mt-7 grid gap-3">
