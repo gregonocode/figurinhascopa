@@ -149,14 +149,14 @@ function isProdutoFamilia(payload: SerejaWebhookPayload) {
 
 function extractSaleId(payload: SerejaWebhookPayload): string | null {
   return (
-    getStringValue(payload?.id) ||
     getStringValue(payload?.sale_id) ||
+    getStringValue(payload?.data?.sale?.id) ||
+    getStringValue(payload?.data?.sale_id) ||
     getStringValue(payload?.order_id) ||
     getStringValue(payload?.payment_id) ||
-    getStringValue(payload?.data?.id) ||
-    getStringValue(payload?.data?.sale_id) ||
     getStringValue(payload?.data?.order_id) ||
-    getStringValue(payload?.data?.payment_id)
+    getStringValue(payload?.data?.payment_id) ||
+    getStringValue(payload?.id)
   );
 }
 
