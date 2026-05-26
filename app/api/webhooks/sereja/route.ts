@@ -88,6 +88,57 @@ function extractBuyerEmail(payload: SerejaWebhookPayload): string | null {
   )?.toLowerCase() ?? null;
 }
 
+function extractBuyerName(payload: SerejaWebhookPayload): string | null {
+  return (
+    getStringValue(payload?.customer?.name) ||
+    getStringValue(payload?.buyer?.name) ||
+    getStringValue(payload?.data?.sale?.buyer?.name) ||
+    getStringValue(payload?.data?.buyer?.name) ||
+    getStringValue(payload?.name) ||
+    getStringValue(payload?.data?.name)
+  );
+}
+
+function extractProductName(payload: SerejaWebhookPayload): string | null {
+  return (
+    getStringValue(payload?.product_name) ||
+    getStringValue(payload?.data?.sale?.product_name) ||
+    getStringValue(payload?.data?.product_name)
+  );
+}
+
+function extractProductId(payload: SerejaWebhookPayload): string | null {
+  return (
+    getStringValue(payload?.product_id) ||
+    getStringValue(payload?.data?.sale?.product_id) ||
+    getStringValue(payload?.data?.product_id)
+  );
+}
+
+function isProdutoFamilia(payload: SerejaWebhookPayload) {
+  const productName = String(extractProductName(payload) || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  const productId = extractProductId(payload);
+
+  const familiaProductIds = String(process.env.SEREJA_FAMILIA_PRODUCT_IDS || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  if (productId && familiaProductIds.includes(productId)) {
+    return true;
+  }
+
+  return (
+    productName.includes("familia") ||
+    productName.includes("family") ||
+    productName.includes("figurinhas familia")
+  );
+}
+
 function extractSaleId(payload: SerejaWebhookPayload): string | null {
   return (
     getStringValue(payload?.id) ||
@@ -286,6 +337,120 @@ async function processarPedidoFamilia(pedido: PedidoFigurinha) {
   }
 }
 
+async function processarFamiliaSemPedido(params: {
+  email: string;
+  nome: string | null;
+  saleId: string | null;
+}) {
+  const email = params.email.trim().toLowerCase();
+  const nome = params.nome?.trim() || null;
+  const saleRef = params.saleId ? `sereja_sale:${params.saleId}` : null;
+
+  if (!email) {
+    throw new Error("E-mail do comprador não encontrado.");
+  }
+
+  if (saleRef) {
+    const { data: movimentacaoExistente, error: buscaMovError } =
+      await supabaseAdmin
+        .from("creditos_movimentacoes")
+        .select("id")
+        .eq("origem", "compra_pacote_familia")
+        .eq("descricao", saleRef)
+        .maybeSingle();
+
+    if (buscaMovError) {
+      throw buscaMovError;
+    }
+
+    if (movimentacaoExistente) {
+      return {
+        ok: true,
+        alreadyProcessed: true,
+      };
+    }
+  }
+
+  const senhaTemporaria = gerarSenhaTemporaria();
+  const senhaHash = await bcrypt.hash(senhaTemporaria, 10);
+
+  const { data: usuarioExistente, error: usuarioBuscaError } =
+    await supabaseAdmin
+      .from("usuarios")
+      .select("id, creditos")
+      .eq("email", email)
+      .maybeSingle();
+
+  if (usuarioBuscaError) {
+    throw usuarioBuscaError;
+  }
+
+  let usuarioId: string;
+
+  if (usuarioExistente) {
+    usuarioId = usuarioExistente.id;
+
+    const creditosAtuais = Number(usuarioExistente.creditos || 0);
+
+    const { error: updateUserError } = await supabaseAdmin
+      .from("usuarios")
+      .update({
+        nome,
+        senha_hash: senhaHash,
+        senha_temporaria: true,
+        creditos: creditosAtuais + 5,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", usuarioId);
+
+    if (updateUserError) {
+      throw updateUserError;
+    }
+  } else {
+    const { data: novoUsuario, error: insertUserError } = await supabaseAdmin
+      .from("usuarios")
+      .insert({
+        email,
+        nome,
+        senha_hash: senhaHash,
+        senha_temporaria: true,
+        creditos: 5,
+      })
+      .select("id")
+      .single();
+
+    if (insertUserError) {
+      throw insertUserError;
+    }
+
+    usuarioId = novoUsuario.id;
+  }
+
+  const { error: movError } = await supabaseAdmin
+    .from("creditos_movimentacoes")
+    .insert({
+      usuario_id: usuarioId,
+      tipo: "entrada",
+      quantidade: 5,
+      origem: "compra_pacote_familia",
+      descricao: saleRef || "Compra pacote família via Sereja",
+    });
+
+  if (movError) {
+    throw movError;
+  }
+
+  await enviarEmailFamilia({
+    email,
+    senha: senhaTemporaria,
+  });
+
+  return {
+    ok: true,
+    alreadyProcessed: false,
+  };
+}
+
 async function processarPedidoIndividual(pedido: PedidoFigurinha) {
   /*
     Aqui será a próxima etapa:
@@ -386,6 +551,8 @@ export async function POST(request: Request) {
   const pedidoId = extractPedidoId(payload);
   const saleId = extractSaleId(payload);
   const buyerEmail = extractBuyerEmail(payload);
+  const buyerName = extractBuyerName(payload);
+  const isFamilia = isProdutoFamilia(payload);
 
   try {
     if (!isPaidEvent(eventName, payload)) {
@@ -398,6 +565,33 @@ export async function POST(request: Request) {
     }
 
     if (!pedidoId) {
+      if (isFamilia) {
+        if (!buyerEmail) {
+          return NextResponse.json(
+            {
+              error:
+                "E-mail do comprador não encontrado no webhook do pacote família.",
+              eventName,
+            },
+            { status: 400 }
+          );
+        }
+
+        const result = await processarFamiliaSemPedido({
+          email: buyerEmail,
+          nome: buyerName,
+          saleId,
+        });
+
+        return NextResponse.json({
+          ok: true,
+          tipo: "familia",
+          semPedido: true,
+          alreadyProcessed: result.alreadyProcessed,
+          eventName,
+        });
+      }
+
       return NextResponse.json(
         {
           error: "Não foi possível encontrar pedido_id/ref no webhook.",
@@ -445,7 +639,11 @@ export async function POST(request: Request) {
       .eq("id", pedido.id);
 
     if (pedido.tipo === "familia") {
-      await processarPedidoFamilia(pedido as PedidoFigurinha);
+      await processarPedidoFamilia({
+        ...(pedido as PedidoFigurinha),
+        email: buyerEmail || pedido.email,
+        nome: buyerName || pedido.nome,
+      });
     }
 
     if (pedido.tipo === "individual") {
