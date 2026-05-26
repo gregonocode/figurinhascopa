@@ -2,9 +2,13 @@
 
 import { useMemo, useState } from "react";
 
+import PersonalizadaCarousel from "../components/PersonalizadaCarousel";
+import "../components/css/shine.css";
+
 type Plano = "individual" | "familia";
 
 type Step =
+  | "inicio"
   | "plano"
   | "upload"
   | "dados"
@@ -14,7 +18,7 @@ type Step =
 
 export default function QuizPage() {
   const [plano, setPlano] = useState<Plano | null>(null);
-  const [step, setStep] = useState<Step>("plano");
+  const [step, setStep] = useState<Step>("inicio");
 
   const [email, setEmail] = useState("");
   const [nome, setNome] = useState("");
@@ -27,6 +31,10 @@ export default function QuizPage() {
   const [erro, setErro] = useState("");
 
   const progresso = useMemo(() => {
+    if (step === "inicio") {
+      return 0;
+    }
+
     const steps: Step[] =
       plano === "familia"
         ? ["plano", "familia"]
@@ -47,6 +55,19 @@ export default function QuizPage() {
     }
 
     setStep("familia");
+  }
+
+  function abrirCheckoutFamilia() {
+    setErro("");
+
+    const checkoutUrl = process.env.NEXT_PUBLIC_CHECKOUT_FAMILIA_URL;
+
+    if (!checkoutUrl) {
+      setErro("URL do checkout familia nao configurada.");
+      return;
+    }
+
+    window.location.href = checkoutUrl;
   }
 
   async function handleUpload(file: File) {
@@ -137,9 +158,34 @@ export default function QuizPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f7f7f7] px-4 py-6 text-[#181818]">
+    <main className="min-h-screen bg-[#fffceb] px-4 py-6 text-[#181818]">
       <div className="mx-auto flex min-h-[calc(100vh-48px)] w-full max-w-xl flex-col justify-center">
-        <div className="mb-5">
+        {step === "inicio" ? (
+          <section className="flex min-h-[calc(100vh-48px)] flex-col justify-center text-center">
+            <div className="-mx-4 mb-8 sm:-mx-20">
+              <PersonalizadaCarousel />
+            </div>
+
+            <div className="mx-auto w-full max-w-md">
+              <h1 className="text-4xl font-black leading-tight tracking-tight sm:text-5xl">
+                Crie suas proprias Figurinhas da copa
+              </h1>
+
+              <p className="mt-4 text-base font-medium leading-7 text-neutral-700">
+                Para você fazer surpresa pra quem você ama!
+              </p>
+
+              <button
+                onClick={() => setStep("plano")}
+                className="shine-card mt-8 w-full overflow-hidden rounded-2xl bg-green-600 px-5 py-4 text-sm font-black text-white shadow-lg shadow-green-900/20 transition hover:bg-green-700"
+              >
+                <span className="relative z-10">INICIAR</span>
+              </button>
+            </div>
+          </section>
+        ) : (
+          <>
+            <div className="mb-5">
           <div className="mb-3 flex items-center justify-between">
             <span className="text-sm font-semibold text-green-700">
               Figurinhas da Copa
@@ -155,9 +201,9 @@ export default function QuizPage() {
               style={{ width: `${progresso}%` }}
             />
           </div>
-        </div>
+            </div>
 
-        <section className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-black/5 sm:p-7">
+            <section className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-black/5 sm:p-7">
           {step === "plano" && (
             <div>
               <p className="mb-2 text-sm font-semibold text-green-700">
@@ -198,8 +244,7 @@ export default function QuizPage() {
                         Pacote familia +5 pessoas
                       </h2>
                       <p className="mt-1 text-sm text-white/85">
-                        Pra fazer figurinha de todo mundo da familia e receber
-                        tudo no mesmo e-mail.
+                        Pra fazer figurinha para mais de +5 pessoas
                       </p>
                     </div>
                   </div>
@@ -422,57 +467,24 @@ export default function QuizPage() {
               </h1>
 
               <p className="mt-3 text-sm leading-6 text-neutral-600">
-                Apos o pagamento, voce recebe no e-mail seu login, senha
-                temporaria e o link para acessar a plataforma.
+                Voce envia as imagens das 5 pessoas e a gente gera as
+                figurinhas da Copa para todo mundo entrar na brincadeira.
               </p>
 
-              <div className="mt-6 grid gap-3">
-                <div className="rounded-2xl bg-green-50 p-4">
-                  <strong>5 creditos inclusos</strong>
-                  <p className="mt-1 text-sm text-neutral-600">
-                    Cada credito gera 1 figurinha personalizada.
-                  </p>
-                </div>
-
-                <div className="rounded-2xl bg-neutral-50 p-4">
-                  <strong>Dashboard exclusivo</strong>
-                  <p className="mt-1 text-sm text-neutral-600">
-                    Acesse www.figurinhadacopa.online/login para criar e baixar
-                    suas figurinhas.
-                  </p>
-                </div>
-
-                <div className="rounded-2xl bg-neutral-50 p-4">
-                  <strong>Download em PDF</strong>
-                  <p className="mt-1 text-sm text-neutral-600">
-                    Baixe suas figurinhas prontas em imagem ou PDF para
-                    imprimir.
-                  </p>
-                </div>
+              <div className="-mx-5 mt-5 sm:-mx-7">
+                <PersonalizadaCarousel compact />
               </div>
 
-              <div className="mt-6">
-                <label className="mb-2 block text-sm font-bold">
-                  Seu e-mail
-                </label>
-                <input
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder="voce@email.com"
-                  type="email"
-                  className="w-full rounded-2xl border border-neutral-200 px-4 py-3 outline-none focus:border-green-600"
-                />
-                <p className="mt-2 text-xs text-neutral-500">
-                  Seu acesso sera enviado para esse e-mail.
-                </p>
+              <div className="mt-5 rounded-2xl bg-green-50 p-4 text-sm leading-6 text-neutral-700">
+                O pacote e ideal para familia, amigos ou grupo: separe ate 5
+                fotos, escolha o pacote e siga para finalizar.
               </div>
 
               <button
-                onClick={criarPedidoERedirecionar}
-                disabled={saving}
-                className="mt-6 w-full rounded-2xl bg-green-600 px-5 py-4 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50"
+                onClick={abrirCheckoutFamilia}
+                className="shine-card mt-6 w-full overflow-hidden rounded-2xl bg-green-600 px-5 py-4 text-sm font-black text-white shadow-lg shadow-green-900/20 transition hover:bg-green-700"
               >
-                {saving ? "Preparando checkout..." : "Comprar pacote"}
+                <span className="relative z-10">Comprar pacote familia</span>
               </button>
             </div>
           )}
@@ -482,7 +494,9 @@ export default function QuizPage() {
               {erro}
             </div>
           )}
-        </section>
+            </section>
+          </>
+        )}
       </div>
     </main>
   );
