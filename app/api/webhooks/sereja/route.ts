@@ -45,6 +45,14 @@ function getStringValue(value: unknown): string | null {
   return null;
 }
 
+function isValidUuid(value: string | null) {
+  if (!value) return false;
+
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value
+  );
+}
+
 function extractEventName(payload: SerejaWebhookPayload): string | null {
   return (
     getStringValue(payload?.event) ||
@@ -564,37 +572,49 @@ export async function POST(request: Request) {
       });
     }
 
-    if (!pedidoId) {
-      if (isFamilia) {
-        if (!buyerEmail) {
-          return NextResponse.json(
-            {
-              error:
-                "E-mail do comprador não encontrado no webhook do pacote família.",
-              eventName,
-            },
-            { status: 400 }
-          );
-        }
-
-        const result = await processarFamiliaSemPedido({
-          email: buyerEmail,
-          nome: buyerName,
-          saleId,
-        });
-
-        return NextResponse.json({
-          ok: true,
-          tipo: "familia",
-          semPedido: true,
-          alreadyProcessed: result.alreadyProcessed,
-          eventName,
-        });
+    if (isFamilia) {
+      if (!buyerEmail) {
+        return NextResponse.json(
+          {
+            error:
+              "E-mail do comprador não encontrado no webhook do pacote família.",
+            eventName,
+          },
+          { status: 400 }
+        );
       }
 
+      const result = await processarFamiliaSemPedido({
+        email: buyerEmail,
+        nome: buyerName,
+        saleId,
+      });
+
+      return NextResponse.json({
+        ok: true,
+        tipo: "familia",
+        semPedido: true,
+        alreadyProcessed: result.alreadyProcessed,
+        eventName,
+      });
+    }
+
+    if (!pedidoId) {
       return NextResponse.json(
         {
           error: "Não foi possível encontrar pedido_id/ref no webhook.",
+          eventName,
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!isValidUuid(pedidoId)) {
+      return NextResponse.json(
+        {
+          error:
+            "external_ref inválido. O plano individual precisa receber um UUID real de pedidos_figurinhas.",
+          external_ref: pedidoId,
           eventName,
         },
         { status: 400 }
@@ -664,7 +684,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Erro no webhook da Sereja:", error);
 
-    if (pedidoId) {
+    if (isValidUuid(pedidoId)) {
       await supabaseAdmin
         .from("pedidos_figurinhas")
         .update({
