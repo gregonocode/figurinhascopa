@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { supabaseAdmin } from "@/app/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -315,11 +316,65 @@ async function processarPedidoIndividual(pedido: PedidoFigurinha) {
   }
 }
 
+function verifySerejaSignature(params: {
+  rawBody: string;
+  signature: string | null;
+  secret: string;
+}) {
+  const { rawBody, signature, secret } = params;
+
+  if (!signature) return false;
+
+  const expectedSignature = crypto
+    .createHmac("sha256", secret)
+    .update(rawBody)
+    .digest("hex");
+
+  try {
+    const receivedBuffer = Buffer.from(signature, "hex");
+    const expectedBuffer = Buffer.from(expectedSignature, "hex");
+
+    if (receivedBuffer.length !== expectedBuffer.length) {
+      return false;
+    }
+
+    return crypto.timingSafeEqual(receivedBuffer, expectedBuffer);
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(request: Request) {
   let payload: SerejaWebhookPayload;
 
+  const webhookSecret = process.env.SEREJA_WEBHOOK_SECRET;
+
+  if (!webhookSecret) {
+    return NextResponse.json(
+      { error: "SEREJA_WEBHOOK_SECRET não configurado." },
+      { status: 500 }
+    );
+  }
+
+  const rawBody = await request.text();
+
+  const signature = request.headers.get("x-sereja-signature");
+
+  const isValidSignature = verifySerejaSignature({
+    rawBody,
+    signature,
+    secret: webhookSecret,
+  });
+
+  if (!isValidSignature) {
+    return NextResponse.json(
+      { error: "Assinatura inválida." },
+      { status: 401 }
+    );
+  }
+
   try {
-    payload = await request.json();
+    payload = JSON.parse(rawBody) as SerejaWebhookPayload;
   } catch {
     return NextResponse.json(
       { error: "Payload inválido." },
