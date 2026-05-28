@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import type { User } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/app/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -202,6 +203,109 @@ function gerarSenhaTemporaria() {
   return senha;
 }
 
+async function findAuthUserByEmail(email: string): Promise<User | null> {
+  const normalizedEmail = email.trim().toLowerCase();
+  let page = 1;
+  const perPage = 1000;
+
+  while (true) {
+    const { data, error } = await supabaseAdmin.auth.admin.listUsers({
+      page,
+      perPage,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    const user = data.users.find(
+      (item) => item.email?.toLowerCase() === normalizedEmail
+    );
+
+    if (user) {
+      return user;
+    }
+
+    if (data.users.length < perPage) {
+      return null;
+    }
+
+    page += 1;
+  }
+}
+
+async function sincronizarUsuarioAuth(params: {
+  email: string;
+  nome: string | null;
+  senha: string;
+}) {
+  const email = params.email.trim().toLowerCase();
+  const nome = params.nome?.trim() || null;
+
+  const authUser = await findAuthUserByEmail(email);
+
+  if (authUser) {
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(
+      authUser.id,
+      {
+        password: params.senha,
+        email_confirm: true,
+        user_metadata: {
+          nome,
+        },
+      }
+    );
+
+    if (error) {
+      throw error;
+    }
+
+    return authUser.id;
+  }
+
+  const { data, error } = await supabaseAdmin.auth.admin.createUser({
+    email,
+    password: params.senha,
+    email_confirm: true,
+    user_metadata: {
+      nome,
+    },
+  });
+
+  if (error) {
+    const isAlreadyRegistered =
+      error.message.toLowerCase().includes("already") ||
+      error.message.toLowerCase().includes("registered");
+
+    if (!isAlreadyRegistered) {
+      throw error;
+    }
+
+    const existingAuthUser = await findAuthUserByEmail(email);
+
+    if (!existingAuthUser) {
+      throw error;
+    }
+
+    const { error: updateError } =
+      await supabaseAdmin.auth.admin.updateUserById(existingAuthUser.id, {
+        password: params.senha,
+        email_confirm: true,
+        user_metadata: {
+          nome,
+        },
+      });
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    return existingAuthUser.id;
+  }
+
+  return data.user.id;
+}
+
 async function enviarEmailFamilia(params: {
   email: string;
   senha: string;
@@ -267,6 +371,12 @@ async function enviarEmailFamilia(params: {
 async function processarPedidoFamilia(pedido: PedidoFigurinha) {
   const senhaTemporaria = gerarSenhaTemporaria();
   const senhaHash = await bcrypt.hash(senhaTemporaria, 10);
+
+  await sincronizarUsuarioAuth({
+    email: pedido.email,
+    nome: pedido.nome,
+    senha: senhaTemporaria,
+  });
 
   const { data: usuarioExistente, error: usuarioBuscaError } =
     await supabaseAdmin
@@ -381,6 +491,12 @@ async function processarFamiliaSemPedido(params: {
 
   const senhaTemporaria = gerarSenhaTemporaria();
   const senhaHash = await bcrypt.hash(senhaTemporaria, 10);
+
+  await sincronizarUsuarioAuth({
+    email,
+    nome,
+    senha: senhaTemporaria,
+  });
 
   const { data: usuarioExistente, error: usuarioBuscaError } =
     await supabaseAdmin
