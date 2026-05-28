@@ -112,7 +112,7 @@ export async function POST(request: Request) {
     const { data: pedido, error: pedidoError } = await supabaseAdmin
       .from("pedidos_figurinhas")
       .insert({
-        tipo: "dashboard",
+        tipo: "individual",
         origem: "dashboard",
         email,
         nome,
@@ -120,7 +120,8 @@ export async function POST(request: Request) {
         peso: profissao,
         time,
         imagem_original_url: publicUrlData.publicUrl,
-        status: "gerando",
+        status: "pago",
+        erro: null,
       })
       .select(pedidoSelect)
       .single();
