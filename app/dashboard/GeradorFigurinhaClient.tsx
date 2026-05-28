@@ -38,7 +38,7 @@ type Props = {
   pedidosIniciais: Pedido[];
 };
 
-type Tab = "gerador" | "preview" | "historico" | "conta";
+type Tab = "gerador" | "historico" | "conta";
 
 const statusLabel: Record<string, string> = {
   pago: "Na fila",
@@ -50,7 +50,6 @@ const statusLabel: Record<string, string> = {
 
 const tabs: Array<{ id: Tab; label: string }> = [
   { id: "gerador", label: "Gerador" },
-  { id: "preview", label: "Previa" },
   { id: "historico", label: "Ultimas" },
   { id: "conta", label: "Conta" },
 ];
@@ -155,7 +154,6 @@ export default function GeradorFigurinhaClient({
       setCreditos(Number(json.creditos_restantes ?? creditos - 1));
       setPedidoAtivoId(json.pedido.id);
       atualizarPedidoNaLista(json.pedido);
-      setActiveTab("preview");
 
       setNome("");
       setProfissao("");
@@ -279,7 +277,6 @@ export default function GeradorFigurinhaClient({
         </div>
 
         {activeTab === "gerador" ? renderGerador() : null}
-        {activeTab === "preview" ? renderPreview() : null}
         {activeTab === "historico" ? renderHistorico() : null}
         {activeTab === "conta" ? renderConta() : null}
       </section>
@@ -288,133 +285,139 @@ export default function GeradorFigurinhaClient({
 
   function renderGerador() {
     return (
-      <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-black/5 sm:p-7">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <p className="text-sm font-bold text-green-700">Nova figurinha</p>
-            <h2 className="mt-1 text-2xl font-black tracking-tight">
-              Dados para gerar
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-500">
-              Preencha os dados, envie uma foto do rosto e aguarde a geracao.
-            </p>
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-black/5 sm:p-7">
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-sm font-bold text-green-700">
+                Nova figurinha
+              </p>
+              <h2 className="mt-1 text-2xl font-black tracking-tight">
+                Dados para gerar
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-500">
+                Preencha os dados, envie uma foto do rosto e aguarde a geracao.
+              </p>
+            </div>
+
+            <div className="inline-flex w-fit items-center gap-3 rounded-2xl bg-neutral-50 px-4 py-3">
+              <span className="text-xs font-black uppercase text-neutral-500">
+                Creditos
+              </span>
+              <span className="text-xl font-black">{creditos}</span>
+            </div>
           </div>
 
-          <div className="inline-flex w-fit items-center gap-3 rounded-2xl bg-neutral-50 px-4 py-3">
-            <span className="text-xs font-black uppercase text-neutral-500">
-              Creditos
-            </span>
-            <span className="text-xl font-black">{creditos}</span>
-          </div>
-        </div>
+          <div className="grid gap-4">
+            <div>
+              <label className="mb-2 block text-sm font-bold">
+                Foto do rosto
+              </label>
 
-        <div className="grid gap-4">
-          <div>
-            <label className="mb-2 block text-sm font-bold">
-              Foto do rosto
-            </label>
-
-            <label className="flex min-h-44 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border-2 border-dashed border-neutral-300 bg-neutral-50 p-4 text-center transition hover:border-green-500 hover:bg-green-50">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(event) =>
-                  handleFotoChange(event.target.files?.[0] || null)
-                }
-              />
-
-              {previewLocal ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={previewLocal}
-                  alt="Preview da foto enviada"
-                  className="h-44 w-full rounded-2xl object-cover"
+              <label className="flex min-h-44 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border-2 border-dashed border-neutral-300 bg-neutral-50 p-4 text-center transition hover:border-green-500 hover:bg-green-50">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(event) =>
+                    handleFotoChange(event.target.files?.[0] || null)
+                  }
                 />
-              ) : (
-                <>
-                  <span className="rounded-full bg-white px-4 py-2 text-sm font-black shadow-sm">
-                    Selecionar imagem
-                  </span>
-                  <span className="mt-3 text-xs text-neutral-500">
-                    PNG, JPG ou WEBP ate 8MB
-                  </span>
-                </>
-              )}
-            </label>
-          </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            <div>
-              <label className="mb-2 block text-sm font-bold">Nome</label>
-              <input
-                value={nome}
-                onChange={(event) => setNome(event.target.value)}
-                placeholder="Ex: Tiago"
-                className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-sm outline-none focus:border-green-600"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-bold">
-                Profissao/posicao
+                {previewLocal ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={previewLocal}
+                    alt="Preview da foto enviada"
+                    className="h-44 w-full rounded-2xl object-cover"
+                  />
+                ) : (
+                  <>
+                    <span className="rounded-full bg-white px-4 py-2 text-sm font-black shadow-sm">
+                      Selecionar imagem
+                    </span>
+                    <span className="mt-3 text-xs text-neutral-500">
+                      PNG, JPG ou WEBP ate 8MB
+                    </span>
+                  </>
+                )}
               </label>
-              <input
-                value={profissao}
-                onChange={(event) => setProfissao(event.target.value)}
-                placeholder="Ex: Atacante"
-                className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-sm outline-none focus:border-green-600"
-              />
             </div>
 
-            <div>
-              <label className="mb-2 block text-sm font-bold">
-                Time/selecao
-              </label>
-              <input
-                value={time}
-                onChange={(event) => setTime(event.target.value)}
-                placeholder="Ex: Brasil"
-                className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-sm outline-none focus:border-green-600"
-              />
+            <div className="grid gap-4 md:grid-cols-3">
+              <div>
+                <label className="mb-2 block text-sm font-bold">Nome</label>
+                <input
+                  value={nome}
+                  onChange={(event) => setNome(event.target.value)}
+                  placeholder="Ex: Tiago"
+                  className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-sm outline-none focus:border-green-600"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-bold">
+                  Profissao/posicao
+                </label>
+                <input
+                  value={profissao}
+                  onChange={(event) => setProfissao(event.target.value)}
+                  placeholder="Ex: Atacante"
+                  className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-sm outline-none focus:border-green-600"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-bold">
+                  Time/selecao
+                </label>
+                <input
+                  value={time}
+                  onChange={(event) => setTime(event.target.value)}
+                  placeholder="Ex: Brasil"
+                  className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-sm outline-none focus:border-green-600"
+                />
+              </div>
             </div>
+
+            {erro ? (
+              <div className="rounded-2xl bg-red-50 p-4 text-sm font-bold text-red-700">
+                {erro}
+              </div>
+            ) : null}
+
+            {creditos <= 0 ? (
+              <div className="flex flex-col gap-3 rounded-2xl bg-yellow-50 p-4 text-sm font-bold text-yellow-800 sm:flex-row sm:items-center sm:justify-between">
+                <span>Voce nao possui creditos disponiveis.</span>
+                <a
+                  href="/comprar-creditos"
+                  className="w-fit rounded-xl bg-yellow-500 px-4 py-2 text-xs font-black text-white"
+                >
+                  Comprar creditos
+                </a>
+              </div>
+            ) : null}
+
+            <button
+              type="button"
+              disabled={!podeGerar || gerando}
+              onClick={gerarFigurinha}
+              className="mt-2 rounded-2xl bg-green-600 px-5 py-4 text-sm font-black text-white shadow-lg shadow-green-900/20 transition hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:shadow-none"
+            >
+              {gerando ? "Enviando para geracao..." : "Gerar figurinha"}
+            </button>
           </div>
-
-          {erro ? (
-            <div className="rounded-2xl bg-red-50 p-4 text-sm font-bold text-red-700">
-              {erro}
-            </div>
-          ) : null}
-
-          {creditos <= 0 ? (
-            <div className="flex flex-col gap-3 rounded-2xl bg-yellow-50 p-4 text-sm font-bold text-yellow-800 sm:flex-row sm:items-center sm:justify-between">
-              <span>Voce nao possui creditos disponiveis.</span>
-              <a
-                href="/comprar-creditos"
-                className="w-fit rounded-xl bg-yellow-500 px-4 py-2 text-xs font-black text-white"
-              >
-                Comprar creditos
-              </a>
-            </div>
-          ) : null}
-
-          <button
-            type="button"
-            disabled={!podeGerar || gerando}
-            onClick={gerarFigurinha}
-            className="mt-2 rounded-2xl bg-green-600 px-5 py-4 text-sm font-black text-white shadow-lg shadow-green-900/20 transition hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:shadow-none"
-          >
-            {gerando ? "Enviando para geracao..." : "Gerar figurinha"}
-          </button>
         </div>
+
+        {renderPreviewCard()}
       </div>
     );
   }
 
-  function renderPreview() {
+  function renderPreviewCard() {
     return (
-      <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-black/5 sm:p-7">
+      <aside className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-black/5 sm:p-7 xl:self-start">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-sm font-bold text-green-700">Previa</p>
@@ -431,7 +434,7 @@ export default function GeradorFigurinhaClient({
         </div>
 
         <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(260px,380px)_1fr]">
-          <div className="rounded-3xl bg-neutral-100 p-4">
+          <div className="rounded-3xl bg-neutral-100 p-4 lg:col-span-2">
             <div className="mx-auto flex aspect-[2/3] max-w-[340px] items-center justify-center overflow-hidden rounded-3xl bg-white shadow-sm">
               {pedidoAtivo?.imagem_final_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -462,19 +465,17 @@ export default function GeradorFigurinhaClient({
                   </p>
                 </div>
               ) : (
-                <div className="px-6 text-center">
-                  <p className="text-xl font-black uppercase">
-                    Sua figurinha
-                  </p>
-                  <p className="mt-2 text-xs font-bold text-neutral-500">
-                    Preencha os dados no gerador para montar a previa.
-                  </p>
-                </div>
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src="/figurinha_base.png"
+                  alt="Modelo base da figurinha"
+                  className="h-full w-full object-contain"
+                />
               )}
             </div>
           </div>
 
-          <div className="flex flex-col justify-between gap-4">
+          <div className="flex flex-col justify-between gap-4 lg:col-span-2">
             <div className="rounded-2xl bg-neutral-50 p-4">
               <p className="text-sm font-black">Pedido selecionado</p>
               <p className="mt-2 text-sm leading-6 text-neutral-600">
@@ -515,14 +516,14 @@ export default function GeradorFigurinhaClient({
               <button
                 type="button"
                 onClick={() => selecionarAba("gerador")}
-                className="w-fit rounded-2xl bg-green-600 px-5 py-3 text-sm font-black text-white transition hover:bg-green-700"
+                className="hidden w-fit rounded-2xl bg-green-600 px-5 py-3 text-sm font-black text-white transition hover:bg-green-700"
               >
                 Ir para o gerador
               </button>
             )}
           </div>
         </div>
-      </div>
+      </aside>
     );
   }
 
@@ -553,7 +554,7 @@ export default function GeradorFigurinhaClient({
                   type="button"
                   onClick={() => {
                     setPedidoAtivoId(pedido.id);
-                    selecionarAba("preview");
+                    selecionarAba("gerador");
                   }}
                   className="block w-full text-left"
                 >
