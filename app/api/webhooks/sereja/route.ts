@@ -459,7 +459,15 @@ async function processarFamiliaSemPedido(params: {
   };
 }
 
-async function processarPedidoIndividual(pedido: PedidoFigurinha) {
+async function processarPedidoIndividual(params: {
+  pedido: PedidoFigurinha;
+  buyerEmail: string | null;
+  buyerName: string | null;
+  saleId: string | null;
+  eventName: string | null;
+}) {
+  const { pedido, buyerEmail, buyerName, saleId, eventName } = params;
+
   /*
     Aqui será a próxima etapa:
 
@@ -476,15 +484,27 @@ async function processarPedidoIndividual(pedido: PedidoFigurinha) {
     Por enquanto, vamos marcar como "pago" para não perder o pedido.
   */
 
+  const updatePayload: Record<string, unknown> = {
+    status: "pago",
+    erro: null,
+    sereja_sale_id: saleId,
+    sereja_event_id: eventName,
+    processamento_iniciado_em: null,
+    processamento_finalizado_em: null,
+    updated_at: new Date().toISOString(),
+  };
+
+  if (buyerEmail) {
+    updatePayload.email = buyerEmail;
+  }
+
+  if (buyerName && (!pedido.nome || pedido.nome.startsWith("sem-nome"))) {
+    updatePayload.nome = buyerName;
+  }
+
   const { error } = await supabaseAdmin
     .from("pedidos_figurinhas")
-    .update({
-      status: "pago",
-      erro: null,
-      processamento_iniciado_em: null,
-      processamento_finalizado_em: null,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updatePayload)
     .eq("id", pedido.id);
 
   if (error) {
@@ -651,16 +671,6 @@ export async function POST(request: Request) {
       });
     }
 
-    await supabaseAdmin
-      .from("pedidos_figurinhas")
-      .update({
-        status: "pago",
-        sereja_sale_id: saleId,
-        sereja_event_id: eventName,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", pedido.id);
-
     if (pedido.tipo === "familia") {
       await processarPedidoFamilia({
         ...(pedido as PedidoFigurinha),
@@ -670,11 +680,12 @@ export async function POST(request: Request) {
     }
 
     if (pedido.tipo === "individual") {
-      const emailDestino = buyerEmail || pedido.email;
-
       await processarPedidoIndividual({
-        ...(pedido as PedidoFigurinha),
-        email: emailDestino,
+        pedido: pedido as PedidoFigurinha,
+        buyerEmail,
+        buyerName,
+        saleId,
+        eventName,
       });
     }
 
