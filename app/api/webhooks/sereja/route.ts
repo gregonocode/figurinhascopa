@@ -480,6 +480,9 @@ async function processarPedidoIndividual(pedido: PedidoFigurinha) {
     .from("pedidos_figurinhas")
     .update({
       status: "pago",
+      erro: null,
+      processamento_iniciado_em: null,
+      processamento_finalizado_em: null,
       updated_at: new Date().toISOString(),
     })
     .eq("id", pedido.id);

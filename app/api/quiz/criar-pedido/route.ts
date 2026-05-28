@@ -5,8 +5,9 @@ export const runtime = "nodejs";
 
 type CriarPedidoBody = {
   tipo: "individual" | "familia";
-  email: string;
+  email?: string;
   nome?: string;
+  profissao?: string;
   time?: string;
   peso?: string;
   imagem_original_url?: string;
@@ -17,7 +18,10 @@ export async function POST(request: Request) {
     const body = (await request.json()) as CriarPedidoBody;
 
     const tipo = body.tipo;
-    const email = body.email?.trim().toLowerCase();
+    const emailInformado = body.email?.trim().toLowerCase();
+    const email =
+      emailInformado ||
+      `sem-email+${crypto.randomUUID()}@figurinhadacopa.online`;
 
     if (!tipo || !["individual", "familia"].includes(tipo)) {
       return NextResponse.json(
@@ -26,7 +30,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!email) {
+    if (tipo === "familia" && !emailInformado) {
       return NextResponse.json(
         { error: "E-mail e obrigatorio." },
         { status: 400 },
@@ -56,7 +60,7 @@ export async function POST(request: Request) {
         email,
         nome: body.nome?.trim() || null,
         time: body.time?.trim() || null,
-        peso: body.peso?.trim() || null,
+        peso: body.profissao?.trim() || body.peso?.trim() || null,
         imagem_original_url: body.imagem_original_url || null,
         status: "pendente",
       })
@@ -88,7 +92,10 @@ export async function POST(request: Request) {
 
     checkoutUrl.searchParams.set("ref", pedido.id);
     checkoutUrl.searchParams.set("pedido_id", pedido.id);
-    checkoutUrl.searchParams.set("email", email);
+
+    if (emailInformado) {
+      checkoutUrl.searchParams.set("email", emailInformado);
+    }
 
     return NextResponse.json({
       pedidoId: pedido.id,

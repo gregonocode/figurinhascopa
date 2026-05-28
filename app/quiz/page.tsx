@@ -20,10 +20,9 @@ export default function QuizPage() {
   const [plano, setPlano] = useState<Plano | null>(null);
   const [step, setStep] = useState<Step>("inicio");
 
-  const [email, setEmail] = useState("");
   const [nome, setNome] = useState("");
+  const [profissao, setProfissao] = useState("");
   const [time, setTime] = useState("");
-  const [peso, setPeso] = useState("");
   const [imagemUrl, setImagemUrl] = useState("");
 
   const [uploading, setUploading] = useState(false);
@@ -110,13 +109,17 @@ export default function QuizPage() {
         throw new Error("Escolha um plano.");
       }
 
-      if (!email.trim()) {
-        throw new Error("Digite seu e-mail.");
-      }
-
       if (plano === "individual") {
         if (!nome.trim()) {
           throw new Error("Digite o nome da figurinha.");
+        }
+
+        if (!profissao.trim()) {
+          throw new Error("Digite a profissao.");
+        }
+
+        if (!time.trim()) {
+          throw new Error("Digite o time.");
         }
 
         if (!imagemUrl) {
@@ -131,10 +134,9 @@ export default function QuizPage() {
         },
         body: JSON.stringify({
           tipo: plano,
-          email,
           nome,
+          profissao,
           time,
-          peso,
           imagem_original_url: imagemUrl,
         }),
       });
@@ -346,6 +348,18 @@ export default function QuizPage() {
 
                 <div>
                   <label className="mb-2 block text-sm font-bold">
+                    Profissao
+                  </label>
+                  <input
+                    value={profissao}
+                    onChange={(event) => setProfissao(event.target.value)}
+                    placeholder="Ex: Atacante"
+                    className="w-full rounded-2xl border border-neutral-200 px-4 py-3 outline-none focus:border-green-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-bold">
                     Time ou selecao
                   </label>
                   <input
@@ -354,32 +368,6 @@ export default function QuizPage() {
                     placeholder="Ex: Brasil"
                     className="w-full rounded-2xl border border-neutral-200 px-4 py-3 outline-none focus:border-green-600"
                   />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-bold">Peso</label>
-                  <input
-                    value={peso}
-                    onChange={(event) => setPeso(event.target.value)}
-                    placeholder="Ex: 32kg"
-                    className="w-full rounded-2xl border border-neutral-200 px-4 py-3 outline-none focus:border-green-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-bold">
-                    Seu e-mail
-                  </label>
-                  <input
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    placeholder="voce@email.com"
-                    type="email"
-                    className="w-full rounded-2xl border border-neutral-200 px-4 py-3 outline-none focus:border-green-600"
-                  />
-                  <p className="mt-2 text-xs text-neutral-500">
-                    E nesse e-mail que voce vai receber a figurinha pronta.
-                  </p>
                 </div>
               </div>
 
@@ -427,7 +415,7 @@ export default function QuizPage() {
                         {nome || "Seu nome"}
                       </p>
                       <p className="text-xs font-bold text-neutral-600">
-                        {time || "Sua selecao"} • {peso || "Peso"}
+                        {profissao || "Sua profissao"} • {time || "Seu time"}
                       </p>
                     </div>
                   </div>
