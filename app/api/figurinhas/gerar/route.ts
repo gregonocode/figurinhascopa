@@ -126,12 +126,22 @@ export async function POST(request: Request) {
       .single();
 
     if (pedidoError) {
-      console.error("Erro ao criar pedido dashboard:", pedidoError);
+      console.error("Erro ao inserir pedido_figurinhas:", {
+        message: pedidoError.message,
+        details: pedidoError.details,
+        hint: pedidoError.hint,
+        code: pedidoError.code,
+      });
 
-      return NextResponse.json(
-        { error: "Erro ao criar pedido." },
-        { status: 500 },
-      );
+      await supabaseAdmin
+        .from("usuarios")
+        .update({
+          creditos: creditosAtuais,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", usuario.id);
+
+      throw pedidoError;
     }
 
     const creditosRestantes = creditosAtuais - 1;
