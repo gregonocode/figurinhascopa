@@ -104,7 +104,7 @@ export async function POST(req: Request) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL!;
     const surpresaUrl = `${appUrl}/surpresa/${surpresa.token_publico}`;
 
-    const qrCodeDataUrl = await QRCode.toDataURL(surpresaUrl, {
+    const qrCodeBuffer = await QRCode.toBuffer(surpresaUrl, {
       width: 600,
       margin: 2,
     });
@@ -137,7 +137,7 @@ export async function POST(req: Request) {
               Entregue esse QR Code para a pessoa escanear e descobrir a página especial.
             </p>
 
-            <img src="${qrCodeDataUrl}" alt="QR Code da surpresa" style="width: 260px; max-width: 100%; margin: 24px auto; display: block;" />
+            <img src="cid:qrcode-surpresa" alt="QR Code da surpresa" style="width: 260px; max-width: 100%; margin: 24px auto; display: block;" />
 
             <a href="${surpresaUrl}" style="display: inline-block; background: #dc2626; color: #ffffff; padding: 14px 22px; border-radius: 16px; text-decoration: none; font-weight: 700;">
               Abrir surpresa
@@ -149,6 +149,13 @@ export async function POST(req: Request) {
           </div>
         </div>
       `,
+      attachments: [
+        {
+          filename: "qrcode-surpresa.png",
+          content: qrCodeBuffer,
+          contentId: "qrcode-surpresa",
+        },
+      ],
     });
 
     await supabaseAdmin
