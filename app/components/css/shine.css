@@ -1,0 +1,38 @@
+.shine-button {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.shine-button::after {
+  content: "";
+  position: absolute;
+  inset: -45% auto -45% -70%;
+  z-index: 1;
+  width: 46%;
+  transform: skewX(-22deg);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 255 255 / 0.55),
+    transparent
+  );
+  animation: shine-sweep 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.shine-button:disabled::after {
+  display: none;
+}
+
+@keyframes shine-sweep {
+  0%,
+  38% {
+    left: -70%;
+  }
+
+  72%,
+  100% {
+    left: 124%;
+  }
+}

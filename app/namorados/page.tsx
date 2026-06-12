@@ -16,6 +16,13 @@ export default function NamoradosPage() {
 
   const [fotos, setFotos] = useState<File[]>([]);
 
+  const stepOneValid = nomeComprador.trim() !== "" && nomeAmor.trim() !== "";
+  const stepTwoValid = dia.trim() !== "" && mes.trim() !== "";
+  const stepThreeValid = fotos.length > 0;
+  const stepFourValid =
+    presente.trim() !== "" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const canFinish = stepOneValid && stepTwoValid && stepThreeValid && stepFourValid;
+
   function handleFotos(files: FileList | null) {
     if (!files) return;
 
@@ -24,6 +31,8 @@ export default function NamoradosPage() {
   }
 
   async function finalizar() {
+    if (!canFinish) return;
+
     try {
       setLoading(true);
 
@@ -113,7 +122,9 @@ export default function NamoradosPage() {
                 placeholder="Ex: Maria"
               />
 
-              <Button onClick={() => setStep(2)}>Continuar</Button>
+              <Button disabled={!stepOneValid} onClick={() => setStep(2)}>
+                Continuar
+              </Button>
             </div>
           )}
 
@@ -143,7 +154,11 @@ export default function NamoradosPage() {
                 />
               </div>
 
-              <Navigation onBack={() => setStep(1)} onNext={() => setStep(3)} />
+              <Navigation
+                disableNext={!stepTwoValid}
+                onBack={() => setStep(1)}
+                onNext={() => setStep(3)}
+              />
             </div>
           )}
 
@@ -179,7 +194,11 @@ export default function NamoradosPage() {
                 </p>
               )}
 
-              <Navigation onBack={() => setStep(2)} onNext={() => setStep(4)} />
+              <Navigation
+                disableNext={!stepThreeValid}
+                onBack={() => setStep(2)}
+                onNext={() => setStep(4)}
+              />
             </div>
           )}
 
@@ -206,7 +225,11 @@ export default function NamoradosPage() {
                 type="email"
               />
 
-              <Navigation onBack={() => setStep(3)} onNext={() => setStep(5)} />
+              <Navigation
+                disableNext={!stepFourValid}
+                onBack={() => setStep(3)}
+                onNext={() => setStep(5)}
+              />
             </div>
           )}
 
@@ -230,8 +253,8 @@ export default function NamoradosPage() {
 
               <button
                 onClick={finalizar}
-                disabled={loading}
-                className="flex w-full items-center justify-center rounded-2xl bg-red-600 px-5 py-4 text-sm font-black text-white shadow-lg shadow-red-200 transition hover:bg-red-700 disabled:opacity-60"
+                disabled={loading || !canFinish}
+                className="shine-button flex w-full items-center justify-center rounded-2xl bg-red-600 px-5 py-4 text-sm font-black text-white shadow-lg shadow-red-200 transition hover:bg-red-700 disabled:opacity-60"
               >
                 {loading ? (
                   <>
@@ -310,15 +333,18 @@ function Input({
 
 function Button({
   children,
+  disabled,
   onClick,
 }: {
   children: React.ReactNode;
+  disabled?: boolean;
   onClick: () => void;
 }) {
   return (
     <button
+      disabled={disabled}
       onClick={onClick}
-      className="w-full rounded-2xl bg-red-600 px-5 py-4 text-sm font-black text-white shadow-lg shadow-red-200 transition hover:bg-red-700"
+      className="w-full rounded-2xl bg-red-600 px-5 py-4 text-sm font-black text-white shadow-lg shadow-red-200 transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
     >
       {children}
     </button>
@@ -326,9 +352,11 @@ function Button({
 }
 
 function Navigation({
+  disableNext,
   onBack,
   onNext,
 }: {
+  disableNext?: boolean;
   onBack: () => void;
   onNext: () => void;
 }) {
@@ -342,8 +370,9 @@ function Navigation({
       </button>
 
       <button
+        disabled={disableNext}
         onClick={onNext}
-        className="w-full rounded-2xl bg-red-600 px-5 py-4 text-sm font-black text-white"
+        className="w-full rounded-2xl bg-red-600 px-5 py-4 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50"
       >
         Continuar
       </button>

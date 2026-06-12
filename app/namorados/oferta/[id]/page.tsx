@@ -120,7 +120,7 @@ export default async function OfertaNamoradosPage({
 
             <a
               href={checkoutUrl}
-              className="flex w-full items-center justify-center rounded-2xl bg-red-600 px-5 py-4 text-sm font-black text-white shadow-lg shadow-red-200 transition hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-xl"
+              className="shine-button flex w-full items-center justify-center rounded-2xl bg-red-600 px-5 py-4 text-sm font-black text-white shadow-lg shadow-red-200 transition hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-xl"
             >
               <Gift className="mr-2 h-5 w-5" />
               Receber meu QR Code
