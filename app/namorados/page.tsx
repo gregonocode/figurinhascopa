@@ -81,11 +81,6 @@ export default function NamoradosPage() {
           <h1 className="mt-3 text-3xl font-black tracking-tight text-zinc-950">
             Crie uma surpresa raspável para o seu amor
           </h1>
-
-          <p className="mt-3 text-sm leading-6 text-zinc-600">
-            Monte uma página secreta com fotos, mensagem especial e uma
-            brincadeira para revelar o presente.
-          </p>
         </div>
 
         <div className="rounded-[2rem] border border-red-100 bg-white p-6 shadow-xl shadow-red-100/70">
