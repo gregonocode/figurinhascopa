@@ -62,7 +62,7 @@ export default async function OfertaNamoradosPage({
             </h1>
 
             <p className="mt-4 text-sm leading-6 text-zinc-600 sm:text-base sm:leading-7">
-              Agora falta so liberar o QR Code especial. Depois do pagamento,
+              Agora falta so liberar o QR Code especial. Depois de concluir,
               ele sera enviado para o seu e-mail e voce podera entregar para{" "}
               <strong>{surpresa.nome_amor}</strong> raspar, brincar e descobrir
               o presente.
@@ -100,6 +100,12 @@ export default async function OfertaNamoradosPage({
               A ideia e que, assim que raspar para descobrir o presente, voce
               entregue esse presente para{" "}
               <strong className="text-red-600">{surpresa.nome_amor}</strong>.
+            </div>
+
+            <div className="mb-4 rounded-[1.5rem] border border-red-100 bg-red-50 p-4 text-sm font-semibold leading-6 text-zinc-700">
+              Nao precisa imprimir o QR Code. Ele ja chega pronto para usar no
+              seu e-mail: basta o seu amor apontar a camera do celular para
+              abrir a surpresa.
             </div>
 
             <div className="mb-4 flex items-end justify-between gap-4 rounded-[1.5rem] border border-red-100 bg-white p-4 shadow-lg shadow-red-50">
