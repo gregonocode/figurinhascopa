@@ -79,7 +79,7 @@ export default function NamoradosPage() {
           </p>
 
           <h1 className="mt-3 text-3xl font-black tracking-tight text-zinc-950">
-            Crie uma surpresa raspável para o seu amor
+            Crie uma surpresa para o seu amor
           </h1>
         </div>
 

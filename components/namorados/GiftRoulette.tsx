@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import confetti from "canvas-confetti";
 import { Gift, Sparkles } from "lucide-react";
 import { ScratchCard } from "./ScratchCard";
 
@@ -14,6 +15,33 @@ export function GiftRoulette({ presente }: { presente: string }) {
     setTimeout(() => {
       setFinished(true);
     }, 3000);
+  }
+
+  function celebrateReveal() {
+    confetti({
+      particleCount: 120,
+      spread: 80,
+      origin: { y: 0.68 },
+      colors: ["#dc2626", "#fb7185", "#facc15", "#ffffff"],
+    });
+
+    setTimeout(() => {
+      confetti({
+        particleCount: 70,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.72 },
+        colors: ["#dc2626", "#fb7185", "#facc15", "#ffffff"],
+      });
+
+      confetti({
+        particleCount: 70,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.72 },
+        colors: ["#dc2626", "#fb7185", "#facc15", "#ffffff"],
+      });
+    }, 180);
   }
 
   return (
@@ -52,7 +80,11 @@ export function GiftRoulette({ presente }: { presente: string }) {
 
       {finished && (
         <div className="mt-6">
-          <ScratchCard coverText="Raspe para descobrir o presente">
+          <ScratchCard
+            coverText="Raspe para descobrir o presente"
+            revealThreshold={0.4}
+            onReveal={celebrateReveal}
+          >
             <div className="flex min-h-52 flex-col items-center justify-center bg-gradient-to-br from-red-50 to-rose-100 p-8 text-center">
               <Gift className="mb-4 h-12 w-12 text-red-600" />
 
