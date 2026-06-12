@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import "./components/css/shine.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Figurinhas da copa 2026",
-  description: "figurinhas da copa do mundo para imprimir",
+  title: "Dia dos namorados",
+  description: "Surpreenda seu amor com uma experiência única neste Dia dos Namorados. Crie uma surpresa personalizada",
 };
 
 const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID ?? "959904006760346";
