@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Dia dos namorados",
-  description: "Surpreenda seu amor com uma experiência única neste Dia dos Namorados. Crie uma surpresa personalizada",
+  title: "Receitas COpa",
+  description: "Receitas para a Copa do Mundo 2026",
 };
 
 const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID ?? "959904006760346";
